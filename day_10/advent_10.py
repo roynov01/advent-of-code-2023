@@ -1,19 +1,9 @@
 class Node:
-    # nodes = []
-    def __init__(self, old_location, cur_location, dist_from_start, scroll, start):
-        print(dist_from_start)
+    def __init__(self, old_location, cur_location, dist_from_start, scroll):
         self.old_location, self.cur_location = old_location, cur_location
         self.node_type = scroll[cur_location[1]][cur_location[0]]
-        self.dist_from_start = dist_from_start
-        new_location = self.find_to_where()
-        new_dist_from_start = dist_from_start + 1
-        if new_dist_from_start == 1443:
-            print()
-        if new_location == start and dist_from_start != 1:
-            print(f'loop ended, length={new_dist_from_start}, furthest={new_dist_from_start/2}')
-        else:
-            print(f'{old_location=}\n{cur_location=}\n{self.node_type=}\n')
-            Node(self.cur_location, new_location, new_dist_from_start, scroll, start)
+        self.new_location = self.find_to_where()
+        self.dist_from_start = dist_from_start + 1
 
     def find_to_where(self):
         if self.node_type == "|":
@@ -49,12 +39,9 @@ class Node:
 
 
 if __name__ == "__main__":
-    import sys
-    sys.setrecursionlimit(25000)
     with open('day10_input.txt', 'r') as file:
         scroll = file.readlines()
     # scroll = [".....",".S-7.",".|.|.",".L-J.","....."]
-    # scroll = ["..F7.",".FJ|.","SJ.L7","|F--J","LJ..."]
     for y in range(len(scroll)):
         cur_row = scroll[y]
         if cur_row.find("S") > -1:
@@ -62,10 +49,19 @@ if __name__ == "__main__":
             start = (x, y)
             if x != 0:
                 if cur_row[x - 1] in {"-", "F", "L"}:
-                    Node(start, (x - 1, y), 1, scroll, start)
+                    new_location = (x - 1, y)
             if x != len(cur_row):
                 if cur_row[x + 1] in {"-", "7", "J"}:
-                    Node(start, (x + 1, y), 1, scroll, start)
+                    new_location = (x + 1, y)
             else:
-                Node(start, (x, y - 1), 1, scroll, start)
-    print("answer 1 is 7173 (total length 14345")
+                new_location = (x, y - 1)
+            break
+    dist_from_start, cur_location = 1, start
+    while True:
+        cur_node = Node(cur_location, new_location, dist_from_start, scroll)
+        print(f'{dist_from_start}:\t{cur_node.cur_location},\t{cur_node.node_type}')
+        cur_location, new_location = cur_node.cur_location, cur_node.new_location
+        dist_from_start += 1
+        if cur_node.new_location == start:
+            break
+    print(f'loop ended, length={cur_node.dist_from_start}, furthest={cur_node.dist_from_start / 2}')  # 7173
